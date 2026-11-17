@@ -1,0 +1,18 @@
+{
+  "newtonian": {
+    "ghia_rel_L2": 0.02843338523297365,
+    "energy_drift": 0.0,
+    "density_drift": -0.0097646639971518,
+    "passed": true
+  },
+  "tc": {
+    "energy_drift": 8.593058527419663e-07,
+    "density_drift": -0.0024640147840887263,
+    "mean_KE_final": 0.0101194,
+    "max_speed_final": 0.92645,
+    "plug_fraction": 0.3873767747535495,
+    "capped_fraction": 0.25116250232500464,
+    "eta_plug_threshold_Pa_s": 1000.0,
+    "last_field": "field_21.csv"
+  }
+}
