@@ -81,7 +81,13 @@ Same Couette case, same validation, five solvers. Full write-up: [docs/compariso
   max — see `examples/couette/RUN_REPORT.md`,
   `flow_curve.csv/png`, and the videos
   `couette-gamma10.mp4` / `couette-sweep.mp4`. Sweep took 32.5 s.
-- Still open: non-Newtonian fluids and 3D (2D cross-section here).
+- 3D Couette (`examples/couette3d/`): **compiled and run** at γ̇ = 10 s⁻¹
+  only — torque 0.00151904 N·m vs analytic 0.00150796 (+0.73%),
+  validation PASSED; 100×100×120 grid, 24,000 steps, ~22 min serial.
+  Video: [couette3d-gamma10.mp4](https://github.com/marcocaggioni/openlb-skill/blob/main/examples/couette3d/couette3d-gamma10.mp4)
+  (5 s, 720×720, orbiting camera, wedge cutaway). See
+  `examples/couette3d/RUN_REPORT.md`.
+- Still open: non-Newtonian fluids and the 3D sweep (γ̇ = 10 only so far).
 
 ## Files
 
