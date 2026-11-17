@@ -1,0 +1,58 @@
+# Single deformable cell in shear flow — OpenLB immersed-boundary test.
+# This is OpenLB's shipped benchmark example fsi/deformableParticleInShearFlow3d
+# (Krüger et al. 2011), copied here with a run/post wrapper. The C++ case
+# itself is UNCHANGED from the shipped example (same parameters as the
+# publication); only the validation (deformation vs time) is done here.
+#
+# NOTE on scope: the "cell" is a SPHERICAL capsule (icosphere mesh), not
+# a biconcave red blood cell. That is what Krüger's benchmark validates;
+# a biconcave RBC shape is a follow-up, not claimed here.
+
+geometry:
+  domain: 50 x 50 x 50 lattice units (H = 50), shear in the x-y plane
+  walls: top (+x velocity) and bottom (-x velocity), periodic in x and y
+  cell: sphere, radius 5 lattice units, centre (25, 25, 25)
+  mesh: sph_ico_1280.msh (icosphere, 1280 faces, 642 nodes)
+
+fluid:
+  model: newtonian, BGK with Guo forcing (ForcedBGKdynamics)
+  Re: 0.02
+  char_nu_lattice: 0.166667   # 1/6
+  relaxation_time: 1.0
+
+membrane:
+  model: Skalak (FEM) + immersed boundary (4-point stencil), as shipped
+  kS: 0.0111111      # shear modulus (lattice units)
+  kAlpha: 0.0111111  # area-dilatation modulus
+  kB: 0.0            # bending modulus (none in this benchmark)
+  kV: 0.0            # volume modulus (none)
+  kA: 0.0            # area modulus (none)
+
+shear:
+  G: 0.01            # dimensionless shear rate = capillary number
+                     # G = eta*gamma_dot*r/k_s
+  shear_rate_lattice: 1.3333e-4   # Re*nu/r^2
+  kappa: 0.0133333   # shearRate/G, per lattice time step
+  max_kappa_t: 120.0 # run length in normalized time
+  steps: 9000        # lattice steps (maxT = 120/kappa)
+
+validation:
+  # Taylor deformation parameter D = (a-c)/(a+c) from the principal
+  # semi-axes (a >= b >= c) of the volume inertia tensor — the same
+  # definition as OpenLB's writeParticleInertia (GSL path, not
+  # available here: no GSL installed — D is computed in rbc_post.py
+  # from the written node positions, mirroring that code exactly).
+  # Reference: Krüger, Varnik & Raabe (2011), Comput. Math. Appl.
+  # 61(12), 3485-3505, doi:10.1016/j.camwa.2010.03.057 — and OpenLB's
+  # own shipped validation figure (shearFlowPlot.png): D/G vs kappa*t,
+  # analytic steady value D/G = 6.25 at kappa*t = 120; the shipped
+  # runs reach ~6.8 (dx=1) and ~6.4 (dx=0.5).
+  analytic_D_over_G_steady: 6.25
+  shipped_D_over_G_dx1: 6.8   # read off the shipped figure, approx.
+  tolerance: 0.15             # 15% vs analytic (the shipped dx=1 run
+                              # itself is +9% off analytic, so a 10%
+                              # gate would fail a correct reproduction)
+
+run:
+  status: PASSED (2026-11-17)
+  openlb_dir: ~/openlb
