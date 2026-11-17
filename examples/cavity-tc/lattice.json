@@ -1,0 +1,28 @@
+{
+  "L_m": 0.1,
+  "U_lid_m_s": 1.0,
+  "N": 128,
+  "dx_m": 0.00078125,
+  "omega_target": 1.0,
+  "nu_lb": 0.16666666666666666,
+  "gamma_char_1_s": 10.0,
+  "tau_char_Pa": 92.63594362117865,
+  "eta_char_Pa_s": 9.263594362117866,
+  "eta_max_Pa_s": 70221.4,
+  "dt_s": 1.0981186830962448e-05,
+  "u_lb": 0.014055919143631933,
+  "max_lattice_velocity": 0.1,
+  "mach_ok": true,
+  "run_time_s": 5.0,
+  "n_steps": 455325,
+  "diffusion_time_s": 1.0794945902309325,
+  "snap_interval_s": 0.25,
+  "newtonian": {
+    "eta_Pa_s": 1.0,
+    "omega": 1.5,
+    "u_lb": 0.043402777777777776,
+    "Re": 100.0,
+    "dt_s": 3.390842013888889e-05,
+    "n_steps": 147456
+  }
+}
