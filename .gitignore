@@ -8,3 +8,8 @@ examples/couette/runs/
 examples/couette/lattice.json
 examples/couette/flow_curve.csv
 examples/couette/flow_curve.png
+examples/couette3d/couette3d
+examples/couette3d/*.o
+examples/couette3d/*.d
+examples/couette3d/runs/
+examples/couette3d/lattice3d.json
