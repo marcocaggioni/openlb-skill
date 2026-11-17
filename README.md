@@ -94,6 +94,26 @@ VM's CPU. Video `cavity-tc.mp4` shows speed, log-viscosity with
 the η = 1000 Pa·s yield surface, and vorticity. 2D only, by
 choice — 3D was not attempted.
 
+## Single deformable cell in shear flow — immersed boundary
+
+First immersed-boundary red-blood-cell test: a single deformable
+capsule in shear flow, using OpenLB 1.9's immersed-boundary model
+(FEM membrane + LBM). This is OpenLB's shipped benchmark
+`fsi/deformableParticleInShearFlow3d` (Krüger, Varnik & Raabe
+2011), copied unchanged with a run/post wrapper. See
+`examples/rbc-shear/`.
+
+**Validation PASSED: steady D/G = 7.019 vs analytic 6.25
+(+12.3%, 15% gate)**; the shipped Δx = 1 run reaches ~6.8.
+Domain 50³, sphere radius 5, Re = 0.02, G = 0.01, 9000 steps to
+κt = 120, 359.6 s on this VM's CPU. D is the Taylor deformation
+parameter from the volume inertia tensor (OpenLB's own
+`writeParticleInertia` definition, mirrored in numpy — no GSL
+here). Scope: a **spherical capsule**, not a biconcave RBC, with a
+Skalak membrane and no bending or volume conservation — the
+benchmark's setup. A biconcave RBC shape and a small suspension
+are follow-ups, not claimed here.
+
 ## Solver comparison
 
 Same Couette case, same validation, five solvers. Full write-up: [docs/comparison.md](docs/comparison.md).
@@ -141,6 +161,13 @@ Same Couette case, same validation, five solvers. Full write-up: [docs/compariso
   plug 38.7%, 1315 s CPU. Video: [cavity-tc.mp4](https://github.com/marcocaggioni/openlb-skill/blob/main/examples/cavity-tc/cavity-tc.mp4).
   RTX 3090 runtime estimate ≈ 10–60 s of solver time — see
   `examples/cavity-tc/RUN_REPORT.md` for the basis and caveats.
+- Single deformable cell in shear flow (`examples/rbc-shear/`):
+  **compiled and run** on 2026-11-17. OpenLB's shipped
+  Krüger et al. (2011) benchmark, copied unchanged with a run/post
+  wrapper. **Validation PASSED: steady D/G = 7.019 vs analytic
+  6.25 (+12.3%, 15% gate)**; 9000 steps, 359.6 s CPU. Spherical
+  capsule, not a biconcave RBC — see `examples/rbc-shear/README.md`
+  and `RUN_REPORT.md`.
 - Still open: the 3D Couette sweep (γ̇ = 10 only so far), finer
   resolution, MPI/GPU (serial CPU only here — the GPU run is the
   `matteo` machine's job, see below).
@@ -152,6 +179,7 @@ Same Couette case, same validation, five solvers. Full write-up: [docs/compariso
 - `examples/couette/` — the worked example
 - `examples/couette-tc/` — the same Couette case with the TC fluid (validated 1.14%)
 - `examples/cavity-tc/` — lid-driven cavity with the TC fluid (Ghia-validated setup, video)
+- `examples/rbc-shear/` — single deformable cell in shear flow (Krüger et al. 2011 benchmark, validated D/G = 7.019)
 - `scripts/check-setup.sh` — readiness check (copilot, uv, g++, make, OpenLB)
 
 OpenLB: https://www.openlb.net — https://gitlab.com/openlb/release (GPLv2).
