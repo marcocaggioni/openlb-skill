@@ -1,0 +1,64 @@
+# Couette rheometer — OpenLB example case, THREE-COMPONENT (TC) fluid.
+# Same geometry and sweep labels as the Newtonian Couette example
+# (examples/couette/), so the solvers can be compared point for point.
+# Everything here is a labelled default: confirm before running.
+
+geometry:
+  R_i: 0.020        # m, rotating inner cylinder (bob)
+  R_o: 0.025        # m, fixed outer cylinder (cup)
+  L: 0.060          # m, wetted length (3D torque = torque-per-length * L)
+  axis: Z
+  dimension: 2D     # 2D annulus cross-section, torque per unit length.
+                    # 3D is NOT in scope for this case (see RUN_REPORT.md).
+
+fluid:
+  model: three_component   # TC law (Marco, Nov 17, voice):
+                           #   tau = sigma_y + sigma_y*sqrt(gamma_dot/gamma_dot_c)
+                           #         + eta_bg*gamma_dot
+  sigma_y_Pa: 70.0
+  gamma_dot_c_1_s: 100.0
+  eta_bg_Pa_s: 0.05        # 50 cP
+  rho_kg_m3: 1000.0
+  # Regularization (REQUIRED — the TC viscosity diverges as
+  # gamma_dot -> 0): eta = min(eta(gamma_dot), eta_max) with
+  # eta_max = eta(gamma_dot_reg), gamma_dot_reg = 1e-3 1/s,
+  # so eta_max = 70/1e-3 + 70/sqrt(1e-3*100) + 0.05 ~= 7.02e4 Pa*s.
+  gamma_dot_reg_1_s: 1.0e-3
+  eta_max_Pa_s: 70221.4
+
+sweep:
+  shear_rate_1_s: [0.1, 0.3, 1, 3, 10, 30, 100]   # log-spaced; labels use
+        # the Newtonian inner-wall-rate convention,
+        # Omega = gamma*(Ro^2-Ri^2)/(2*Ro^2). The true inner-wall rate of
+        # the TC fluid EXCEEDS the label rate (the yield stress carries
+        # most of the stress), so the flow curve is validated as TORQUE
+        # vs the analytic TC torque at each Omega — never by comparing
+        # eta_app to the TC law at the label rate.
+  # Run time per point: 40 viscous diffusion times at the label
+  # viscosity, run_time = 40*gap^2/nu_label (same 40x as the Newtonian
+  # 1 s / 0.025 s). With dt solved from omega = 1.0 at eta_label this
+  # is 24,000 steps at every point. Ramp = 20% of the run.
+  diffusion_times: 40.0
+  ramp_fraction: 0.2
+  steady_window_fraction: 0.2   # average torque over the last 20% of the run
+
+lattice:
+  cells_across_gap: 10   # default; dx = gap / 10 = 0.5 mm
+  omega: 1.0             # relaxation frequency AT eta_label; dt is solved
+                         # from this per point (see lattice.py). The local
+                         # omega then follows the local TC viscosity:
+                         # ~1.2-1.8 at the inner wall (in [0.8, 1.9]),
+                         # ~0.02 in the capped plug (see below).
+  max_lattice_velocity: 0.1   # hard check: u_lb at the highest shear rate must stay below this
+  mpi_ranks: 1
+  # NOTE on omega in the plug: at gamma <= 10 the analytic solution has
+  # a genuine unyielded plug attached to the outer wall (R_y < R_o).
+  # There eta is capped at eta_max, so the local omega is ~0.0001-0.02
+  # — far below [0.8, 1.9]. That is the physics of the cap (a solid-like
+  # plug is overdamped, not unstable), not a lattice error; it is
+  # reported per point by lattice.py and in RUN_REPORT.md. The omega
+  # range [0.8, 1.9] applies to the yielded region.
+
+run:
+  dry_run: true   # default: lattice params + build only, no solver run
+  openlb_dir: ~/openlb   # where `git clone https://gitlab.com/openlb/release.git` lives
