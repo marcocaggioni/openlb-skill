@@ -1,0 +1,62 @@
+# Lid-driven cavity — OpenLB example case, THREE-COMPONENT (TC) fluid.
+# Same TC rheology and eta-cap regularization as examples/couette-tc/.
+# Built to make a video of the shear bands / yielding on the home PC
+# (matteo, WSL Ubuntu, RTX 3090) — and verified here on CPU first.
+
+geometry:
+  L: 0.100          # m, square cavity side (2D, unit depth)
+  dimension: 2D
+  # Walls: bottom, left, right fixed; top lid moves at U_lid.
+  # Lid-driven cavity pattern of OpenLB's laminar/cavity2d example.
+
+fluid:
+  model: three_component   # TC law (Marco, Nov 17, voice):
+                           #   tau = sigma_y + sigma_y*sqrt(gamma_dot/gamma_dot_c)
+                           #         + eta_bg*gamma_dot
+  sigma_y_Pa: 70.0
+  gamma_dot_c_1_s: 100.0
+  eta_bg_Pa_s: 0.05        # 50 cP
+  rho_kg_m3: 1000.0
+  # Regularization, same as Couette-TC: eta = min(eta(gamma_dot), eta_max),
+  # eta_max = eta(gamma_dot_reg), gamma_dot_reg = 1e-3 1/s,
+  # eta_max ~= 7.02e4 Pa*s.
+  gamma_dot_reg_1_s: 1.0e-3
+  eta_max_Pa_s: 70221.4
+
+flow:
+  U_lid_m_s: 1.0    # m/s, lid velocity (top wall, +x).
+                    # Characteristic rate U_lid/L = 10 1/s -> tau = 92.6 Pa
+                    # at the lid, ABOVE the 70 Pa yield stress (yielded),
+                    # while the slow bottom corners stay unyielded (plug).
+                    # Effective Re = U*L/nu(eta at 10 1/s) ~= 10.8.
+  run_time_s: 5.0   # ~4.6 viscous diffusion times (L^2/nu_char = 1.08 s)
+                    # and ~50 lid turnovers (L/U_lid = 0.1 s).
+  snapshot_interval_s: 0.25   # field dump cadence (video frames)
+
+lattice:
+  N: 128            # cells per side; dx = L/128 = 0.781 mm
+  omega: 1.0        # relaxation frequency AT eta_char = eta(U_lid/L);
+                    # dt is solved from this (see cavity.py). Local omega
+                    # follows the local TC viscosity: ~1.0 near the lid,
+                    # ~0.0003 in the capped plug (same documented
+                    # exception as Couette-TC).
+  max_lattice_velocity: 0.1   # hard check: u_lb = U_lid*dt/dx = 0.014
+  mpi_ranks: 1
+
+validation:
+  # No analytic TC cavity solution exists. Validation is twofold:
+  # (1) the TC dynamics is the SAME code as examples/couette-tc/,
+  #     validated there to 1.14% max torque error vs the analytic TC
+  #     torque; (2) the cavity setup itself (geometry, lid BC, steady
+  #     state) is validated by a Newtonian run of the same binary
+  #     (--newtonian --eta 1.0, Re = 100) against Ghia, Ghia & Shin
+  #     (1982) centreline velocities — see cavity_post.py.
+  newtonian_eta_Pa_s: 1.0
+  newtonian_Re: 100.0
+  newtonian_omega: 1.5   # not 1.0: at omega=1.0 the Newtonian dt gives
+                         # u_lb = 0.13 (Ma = 0.23) — too compressible
+                         # for a Ghia comparison; at 1.5, u_lb = 0.043.
+
+run:
+  dry_run: true
+  openlb_dir: ~/openlb
